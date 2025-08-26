@@ -1,4 +1,13 @@
+"""
+emotion_detection.py
+
+This module provides the function `emotion_detector` to analyze the emotions
+of a given text using Watson NLP API. It returns emotion scores and the
+dominant emotion.
+"""
+
 import requests
+
 
 def emotion_detector(text_to_analyze):
     """
@@ -9,6 +18,8 @@ def emotion_detector(text_to_analyze):
 
     Returns:
         dict: A dictionary containing emotion scores and dominant emotion.
+              Keys: 'anger', 'disgust', 'fear', 'joy', 'sadness', 'dominant_emotion'
+              If input is blank or API fails, values are None.
     """
     if not text_to_analyze or not text_to_analyze.strip():
         return {
@@ -26,8 +37,7 @@ def emotion_detector(text_to_analyze):
 
     try:
         response = requests.post(url, json=payload, headers=headers, timeout=10)
-    except requests.exceptions.RequestException as e:
-        print(f"API request failed: {e}")
+    except requests.exceptions.RequestException:
         return {
             'anger': None,
             'disgust': None,
@@ -38,7 +48,6 @@ def emotion_detector(text_to_analyze):
         }
 
     if response.status_code != 200:
-        print(f"API returned status code: {response.status_code}")
         return {
             'anger': None,
             'disgust': None,
@@ -56,8 +65,7 @@ def emotion_detector(text_to_analyze):
         fear = emotions.get('fear')
         joy = emotions.get('joy')
         sadness = emotions.get('sadness')
-    except (KeyError, IndexError, ValueError) as e:
-        print(f"Error parsing API response: {e}")
+    except (KeyError, IndexError, ValueError):
         return {
             'anger': None,
             'disgust': None,
@@ -74,8 +82,7 @@ def emotion_detector(text_to_analyze):
         'joy': joy,
         'sadness': sadness
     }
-    
-    # Find dominant emotion
+
     dominant_emotion = None
     valid_scores = {k: v for k, v in emotion_scores.items() if v is not None}
     if valid_scores:
